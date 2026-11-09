@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -47,8 +48,7 @@ html,body{height:100%;overflow:hidden;background:#0b1020;color:var(--ink);font-f
 #rl{position:fixed;left:50%;top:calc(50% + 32px);width:84px;margin-left:-42px;height:4px;background:#1b2144;border-radius:2px;opacity:0;pointer-events:none}#rl i{display:block;height:100%;width:0;background:var(--am);border-radius:2px}
 .pop{position:fixed;left:50%;top:calc(50% - 50px);transform:translateX(-50%);font-weight:700;font-size:20px;pointer-events:none;animation:up .8s forwards;text-shadow:0 0 8px #000;white-space:nowrap}@keyframes up{to{transform:translate(-50%,-40px);opacity:0}}
 body.play,body.play *,#c canvas{cursor:none!important}
-#menu{overflow:auto}#pn{display:block;width:100%;font:inherit;font-size:18px;padding:12px;margin-bottom:12px;border-radius:4px;border:1px solid var(--ln);background:#0e1226;color:var(--ink)}#pn.err{border-color:var(--rd)}
-#lb table{width:100%;margin-top:16px;font-size:14px;border-collapse:collapse}#lb caption{text-align:left;color:var(--dim);font-size:12px;padding-bottom:4px}#lb td{padding:3px 6px;border-top:1px solid var(--ln)}#lb td:last-child{text-align:right;color:var(--am)}
+#menu{overflow:auto}
 #shop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,10,24,.9);backdrop-filter:blur(8px);padding:16px;overflow:auto}#shop .box{max-width:780px;width:100%;border:1px solid var(--ln);border-radius:8px;padding:24px;background:rgba(14,18,38,.95);margin:auto}#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:14px 0 18px}.card{border:1px solid var(--ln);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px}.card b{font-size:18px}.card small{color:var(--dim)}.card button{font-size:14px;padding:8px}button:disabled{opacity:.4;cursor:not-allowed}.sl.lock{opacity:.35}
 #bossbar{position:fixed;left:50%;top:max(70px,calc(env(safe-area-inset-top) + 56px));transform:translateX(-50%);width:min(460px,70vw);display:none;text-align:center;pointer-events:none;font-size:13px;letter-spacing:.12em;color:#d9b8ff}#bossbar div{height:12px;background:#1b2144;border:1px solid var(--ln);border-radius:3px;margin-top:4px;overflow:hidden}#bossfill{display:block;height:100%;width:100%;background:linear-gradient(90deg,#7a2bff,var(--rd))}
 #ban{position:fixed;left:0;right:0;top:22%;text-align:center;font-size:44px;font-weight:700;letter-spacing:.08em;pointer-events:none;opacity:0;text-shadow:0 0 24px rgba(53,224,255,.6);transition:opacity .4s}
@@ -123,7 +123,7 @@ const fm=new T.Mesh(new T.SphereGeometry(.07,8,8),new T.MeshBasicMaterial({color
 g.traverse(o=>{o.castShadow=o.receiveShadow=false});g.position.set(.24,-.22,-.45);g.visible=i==0;cam.add(g);return g});
 // ---- state
 const P={x:0,z:0,y:1.7,vx:0,vz:0,vy:0,hp:100};let yaw=0,pitch=0,cur=0,nextFire=0,reloading=0,rt=0,kick=0,sw=0,flashT=0,held=0,state='menu',paused=false,noLock=false;
-let wave=0,spawnLeft=0,spT=0,waiting=false,between=0,score=0,kills=0,vig=0,coins=0,shopOpen=false,pname='';
+let wave=0,spawnLeft=0,spT=0,waiting=false,between=0,score=0,kills=0,vig=0,coins=0,shopOpen=false;
 const keys={},enemies=[],parts=[],tracers=[];
 let best=0;try{best=+localStorage.getItem('hp_best')||0}catch(e){}
 // ---- audio
@@ -180,15 +180,6 @@ document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElemen
 function die(){state='dead';alive=false;document.body.classList.remove('play');try{document.exitPointerLock()}catch(e){}
 if(score>best){best=score;try{localStorage.setItem('hp_best',best)}catch(e){}}
 $('mt').textContent='You fell';$('sub').textContent='Wave '+wave+' · '+kills+' kills · '+score+' points';$('go').textContent='Play again';$('best').textContent='High score: '+best;$('menu').style.display='flex'}
-const DB='';/* Optional: paste a Firebase Realtime Database URL here for a global leaderboard */
-const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-async function lbGet(){let a=[];try{a=JSON.parse(localStorage.getItem('hp_lb')||'[]')}catch(e){}
-if(DB){try{const r=await fetch(DB+'/scores.json?orderBy=%22score%22&limitToLast=10');a=Object.values((await r.json())||{})}catch(e){}}
-return a.filter(r=>r&&typeof r.name=='string').sort((x,y)=>(+y.score||0)-(+x.score||0)).slice(0,10)}
-async function lbPut(s){const rec={name:pname,score:s,wave:wave,t:Date.now()};
-if(DB){try{await fetch(DB+'/scores.json',{method:'POST',body:JSON.stringify(rec)})}catch(e){}}
-else{try{const a=JSON.parse(localStorage.getItem('hp_lb')||'[]');a.push(rec);a.sort((x,y)=>y.score-x.score);localStorage.setItem('hp_lb',JSON.stringify(a.slice(0,10)))}catch(e){}}}
-async function lbShow(){const a=await lbGet();$('lb').innerHTML=a.length?`<table><caption>LEADERBOARD · ${DB?'GLOBAL':'THIS DEVICE'}</caption>${a.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name).slice(0,40)}</td><td>W${+r.wave||0}</td><td>${+r.score||0}</td></tr>`).join('')}</table>`:''}
 function slots(){$('slots').innerHTML=W.map((w,i)=>`<span class='sl${i==cur?' on':''}${w.own?'':' lock'}'>${i+1} ${w.n}</span>`).join('')}
 function renderShop(){const c=$('cards');c.innerHTML=W.map((w,i)=>`<div class='card'><b style='color:#${w.c.toString(16).padStart(6,'0')}'>${w.n}</b><small>DMG ${w.d}${w.n_>1?'×'+w.n_:''} · ${Math.round(60000/w.rate)} rpm · ${w.M} mag</small>${w.own?`<button data-a='ammo' data-i='${i}'>Ammo +${w.M*2} · 30</button>`:`<button data-a='buy' data-i='${i}'>Buy · ${w.cost}</button>`}</div>`).join('')+`<div class='card'><b>Medkit</b><small>Restore 50 health</small><button data-a='hp'>Buy · 60</button></div>`;
 $('sc').textContent=coins;c.querySelectorAll('button').forEach(b=>{const a=b.dataset.a,i=+b.dataset.i,p=a=='buy'?W[i].cost:a=='ammo'?30:60;b.disabled=coins<p||(a=='hp'&&P.hp>=100)||(a=='ammo'&&W[i].res>=W[i].RM);b.onclick=()=>{if(coins<p)return;coins-=p;if(a=='buy'){W[i].own=true;W[i].mag=W[i].M;W[i].res=W[i].R0;pick(i)}else if(a=='ammo')W[i].res=Math.min(W[i].RM,W[i].res+W[i].M*2);else P.hp=Math.min(100,P.hp+50);tone(700,.08,'square',.1);slots();renderShop();hud()}})}
