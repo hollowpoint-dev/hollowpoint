@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hollow Point – Free 3D Arena Shooter Game in Your Browser</title>
-<meta name="description" content="Hollow Point is a free 3D first-person arena shooter you can play in your browser. Survive 10 waves, earn coins, buy new guns and defeat the Hollow King boss. Climb the leaderboard. No download needed.">
+<meta name="description" content="Hollow Point is a free 3D first-person arena shooter you can play in your browser. Survive 10 waves, earn coins, buy new guns and defeat the Hollow King boss. Beat your high score. No download needed.">
 <meta name="keywords" content="3D shooter, browser FPS, free online shooter, zombie wave shooter, boss fight, Three.js game, Hollow Point">
 <meta name="theme-color" content="#0b1020">
 <meta property="og:type" content="website">
@@ -60,7 +60,7 @@ h1{font-size:46px;line-height:1;letter-spacing:.02em}
 .keys kbd{color:var(--am);font-family:inherit;font-weight:700}
 button{font:inherit;font-weight:700;font-size:18px;padding:12px 28px;border:0;border-radius:4px;background:var(--cy);color:#06101e;cursor:pointer}
 button:hover{background:#7aeaff}button:focus-visible{outline:3px solid #fff;outline-offset:2px}
-#best{margin-top:14px;font-size:13px;color:var(--dim)}
+#best{margin-top:16px;font-size:18px;font-weight:700;color:var(--am)}
 @media (max-width:700px){#radar{display:none}#hp{width:170px}#ammo{font-size:32px}h1{font-size:34px}}
 </style></head><body>
 <div id="c"></div>
@@ -75,7 +75,7 @@ button:hover{background:#7aeaff}button:focus-visible{outline:3px solid #fff;outl
 <div id="menu"><div class="box">
 <h1 id="mt">Hollow Point</h1><p id="sub">Survive 10 waves, earn coins, buy new guns and take down the Hollow King.</p>
 <div class="keys"><kbd>W A S D</kbd><span>Move, Shift to sprint, Space to jump</span><kbd>Mouse</kbd><span>Look, click to fire</span><kbd>1–5 / Wheel</kbd><span>Switch weapon, hold right mouse to zoom</span><kbd>R</kbd><span>Reload</span><kbd>Arrow keys</kbd><span>Look, if the mouse can’t be captured</span></div>
-<input id="pn" maxlength="14" placeholder="Enter a username" autocomplete="off"><button id="go">Play</button><div id="best"></div><div id="lb"></div></div></div>
+<button id="go">Play</button><div id="best"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const T=THREE,$=id=>document.getElementById(id);
@@ -170,16 +170,16 @@ function nextWave(){wave++;spawnLeft=wave==10?6:4+wave*2;spT=1;if(wave==10){spaw
 // ---- flow
 function reset(){decals.splice(0).forEach(d=>S.remove(d));holes.splice(0).forEach(m=>S.remove(m));enemies.splice(0).forEach(e=>S.remove(e.g));W.forEach(w=>{w.mag=w.M;w.res=w.R0;w.own=!w.cost});P.x=P.z=0;P.hp=100;P.y=1.7;P.vx=P.vz=P.vy=0;yaw=pitch=0;score=kills=wave=0;waiting=false;reloading=0;coins=0;shopOpen=false;zoom=0;guns.forEach((g,j)=>g.visible=!j);cur=0;slots();nextWave()}
 let alive=false;
-function start(){if(state!=='play'){const n=$('pn').value.replace(/[<>&]/g,'').trim().slice(0,14);if(!n){$('pn').classList.add('err');$('pn').focus();return}$('pn').classList.remove('err');pname=n;try{localStorage.setItem('hp_name',n)}catch(e){}}if(!AC)try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+function start(){if(!AC)try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
 if(AC&&AC.state==='suspended')AC.resume();
 if(state!=='play'){reset();alive=true}state='play';paused=false;document.body.classList.add('play');$('menu').style.display='none';
 lock()}
 $('go').onclick=start;
 document.addEventListener('pointerlockerror',()=>{if(!everLocked)nl()});
-document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){everLocked=true;noLock=false}if(!document.pointerLockElement&&state==='play'&&!noLock&&!shopOpen&&!paused){paused=true;held=0;document.body.classList.remove('play');$('pn').style.display='none';$('mt').textContent='Paused';$('sub').textContent='Click resume to jump back in.';$('go').textContent='Resume';$('menu').style.display='flex'}});
-function die(){state='dead';alive=false;document.body.classList.remove('play');$('pn').style.display='';lbPut(score).then(lbShow);try{document.exitPointerLock()}catch(e){}
+document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){everLocked=true;noLock=false}if(!document.pointerLockElement&&state==='play'&&!noLock&&!shopOpen&&!paused){paused=true;held=0;document.body.classList.remove('play');$('mt').textContent='Paused';$('sub').textContent='Click resume to jump back in.';$('go').textContent='Resume';$('menu').style.display='flex'}});
+function die(){state='dead';alive=false;document.body.classList.remove('play');try{document.exitPointerLock()}catch(e){}
 if(score>best){best=score;try{localStorage.setItem('hp_best',best)}catch(e){}}
-$('mt').textContent='You fell';$('sub').textContent='Wave '+wave+' · '+kills+' kills · '+score+' points';$('go').textContent='Play again';$('best').textContent='Best score: '+best;$('menu').style.display='flex'}
+$('mt').textContent='You fell';$('sub').textContent='Wave '+wave+' · '+kills+' kills · '+score+' points';$('go').textContent='Play again';$('best').textContent='High score: '+best;$('menu').style.display='flex'}
 const DB='';/* Optional: paste a Firebase Realtime Database URL here for a global leaderboard */
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 async function lbGet(){let a=[];try{a=JSON.parse(localStorage.getItem('hp_lb')||'[]')}catch(e){}
@@ -194,8 +194,8 @@ function renderShop(){const c=$('cards');c.innerHTML=W.map((w,i)=>`<div class='c
 $('sc').textContent=coins;c.querySelectorAll('button').forEach(b=>{const a=b.dataset.a,i=+b.dataset.i,p=a=='buy'?W[i].cost:a=='ammo'?30:60;b.disabled=coins<p||(a=='hp'&&P.hp>=100)||(a=='ammo'&&W[i].res>=W[i].RM);b.onclick=()=>{if(coins<p)return;coins-=p;if(a=='buy'){W[i].own=true;W[i].mag=W[i].M;W[i].res=W[i].R0;pick(i)}else if(a=='ammo')W[i].res=Math.min(W[i].RM,W[i].res+W[i].M*2);else P.hp=Math.min(100,P.hp+50);tone(700,.08,'square',.1);slots();renderShop();hud()}})}
 function openShop(){shopOpen=true;paused=true;held=0;document.body.classList.remove('play');try{document.exitPointerLock()}catch(e){}renderShop();$('swt').textContent='Start wave '+(wave+1);$('shop').style.display='flex'}
 $('sgo').onclick=()=>{$('shop').style.display='none';shopOpen=false;paused=false;document.body.classList.add('play');lock();nextWave()};
-function win(){state='dead';alive=false;document.body.classList.remove('play');try{document.exitPointerLock()}catch(e){}score+=1000+Math.round(P.hp)*5;lbPut(score).then(lbShow);if(score>best){best=score;try{localStorage.setItem('hp_best',best)}catch(e){}}$('mt').textContent='Victory!';$('sub').textContent='The Hollow King is dead · '+kills+' kills · '+score+' points';$('go').textContent='Play again';$('best').textContent='Best score: '+best;$('pn').style.display='';$('menu').style.display='flex'}
-$('best').textContent=best?'Best score: '+best:'';try{$('pn').value=localStorage.getItem('hp_name')||''}catch(e){}$('pn').onkeydown=e=>{if(e.key=='Enter')start()};slots();lbShow();
+function win(){state='dead';alive=false;document.body.classList.remove('play');try{document.exitPointerLock()}catch(e){}score+=1000+Math.round(P.hp)*5;if(score>best){best=score;try{localStorage.setItem('hp_best',best)}catch(e){}}$('mt').textContent='Victory!';$('sub').textContent='The Hollow King is dead · '+kills+' kills · '+score+' points';$('go').textContent='Play again';$('best').textContent='High score: '+best;$('menu').style.display='flex'}
+$('best').textContent='High score: '+best;slots();
 addEventListener('keydown',e=>{keys[e.code]=1;if(e.code=='KeyR')reload();if(/^Digit[1-5]$/.test(e.code))pick(+e.code[5]-1);if(location.hash=='#test'&&state==='play'&&!paused){if(e.code=='KeyB'&&wave<10){enemies.splice(0).forEach(x=>S.remove(x.g));spawnLeft=0;waiting=false;wave=9;nextWave()}if(e.code=='KeyN'){coins+=1000;waiting=false;openShop()}}if(e.code.startsWith('Arrow'))e.preventDefault()});
 addEventListener('keyup',e=>keys[e.code]=0);
 let mxn=0,myn=0;addEventListener('mousemove',e=>{mxn=e.clientX/innerWidth*2-1;myn=e.clientY/innerHeight*2-1;if(state!=='play'||paused)return;if(document.pointerLockElement){yaw-=e.movementX*.0022;pitch-=e.movementY*.0022;pitch=Math.max(-1.45,Math.min(1.45,pitch))}});
